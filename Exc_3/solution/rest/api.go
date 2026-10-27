@@ -71,7 +71,7 @@ func PostOrder(db *repository.DatabaseHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// todo
 		// declare empty order struct
-		var newOrder model.Order
+		newOrder := &model.Order{}
 
 		err := json.NewDecoder(r.Body).Decode(&newOrder)
 
@@ -81,7 +81,7 @@ func PostOrder(db *repository.DatabaseHandler) http.HandlerFunc {
 			render.JSON(w, r, "Invalid request")
 		}
 		// add to db
-		db.AddOrder(&newOrder)
+		db.AddOrder(newOrder)
 
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, "ok")

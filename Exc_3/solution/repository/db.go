@@ -1,6 +1,9 @@
 package repository
 
-import "ordersystem/model"
+import (
+	"ordersystem/model"
+	"time"
+)
 
 type DatabaseHandler struct {
 	// drinks represent all available drinks
@@ -21,9 +24,9 @@ func NewDatabaseHandler() *DatabaseHandler {
 
 	// Init orders slice with some test data
 	orders := []model.Order{
-		{DrinkID: 1},
-		{DrinkID: 4},
-		{DrinkID: 2},
+		{DrinkID: 1, Amount: 2, CreatedAt: time.Now().Add(-30 * time.Minute)},
+		{DrinkID: 4, Amount: 1, CreatedAt: time.Now().Add(-15 * time.Minute)},
+		{DrinkID: 2, Amount: 2, CreatedAt: time.Now()},
 	}
 	return &DatabaseHandler{
 		drinks: drinks,
