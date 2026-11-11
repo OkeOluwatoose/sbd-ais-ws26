@@ -19,8 +19,8 @@ from model import BearingModel
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--name", default="det-1", help="instance name (shows up in the scoreboard)")
-ap.add_argument("--in-topic", default=None, help="TODO: the topic your gateways write to")
-ap.add_argument("--group", default=None, help="TODO: the consumer group of this detector")
+ap.add_argument("--in-topic", default="readings", help="TODO: the topic your gateways write to")
+ap.add_argument("--group", default="detector-group", help="TODO: the consumer group of this detector")
 ap.add_argument("--out-topic", default="anomalies")
 ap.add_argument("--bootstrap", default="localhost:9092")
 args = ap.parse_args()
@@ -32,11 +32,13 @@ consumer = Consumer({
     "bootstrap.servers": args.bootstrap,
     "group.id": args.group,
     "client.id": args.name,
-    "auto.offset.reset": "latest",     # TODO: why "latest" and not "earliest" for a live detector?
+    "auto.offset.reset": "latest",     # TODO: why "latest" and not "earliest" for a live detector? Ans: Live detector must consume real-time messages without backlog delay
 })
 producer = Producer({
     "bootstrap.servers": args.bootstrap,
     # TODO: more settings?
+    "acks": 1,
+    "linger.ms": 5,
 })
 consumer.subscribe([args.in_topic])
 print(f"[{args.name}] {args.in_topic} -> {args.out_topic} (Ctrl+C to stop)", flush=True)
@@ -57,7 +59,7 @@ try:
         if score is not None and score >= model.threshold:
             anomalies += 1
             event = model.anomaly_event(reading, score)
-            producer.produce(args.out_topic, key=None,       # TODO: which key?
+            producer.produce(args.out_topic, key=reading["machine_id"],       # TODO: which key?
                              value=json.dumps(event))
         producer.poll(0)
         if time.time() >= report_at:

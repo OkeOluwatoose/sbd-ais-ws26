@@ -94,12 +94,20 @@ class KafkaSink:
         from confluent_kafka import Producer
         self.producer = Producer({
             "bootstrap.servers": args.bootstrap,
-            # TODO: more settings?
+            # more settings
+            "acks": 1,
+            "linger.ms": 10,
+            "queue.buffering.max.messages": 100000
         })
+        self.topic = "readings"
 
     def send(self, reading):
         # TODO: send the reading (as JSON) to Kafka: self.producer.produce(...)
-        raise NotImplementedError("KafkaSink.send() is part of your solution (Stage C1)")
+        # Keying by machine_id ensures all events for a specific machine land in the same partition
+        key = reading ["machine_id"]
+        value = json.dumps(reading)
+        self.producer.produce(self.topic, key = key, value = value)
+        #raise NotImplementedError("KafkaSink.send() is part of your solution (Stage C1)")
 
     def tick(self):
         """Called once per tick, after all readings of that tick were sent."""
